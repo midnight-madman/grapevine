@@ -17,7 +17,6 @@ export default function SubmitRequestModal({open, setOpen}) {
     const {
         register,
         handleSubmit,
-        errors
     } = useForm();
 
     async function createMoneyStream(recipient, flowRate, userData) {

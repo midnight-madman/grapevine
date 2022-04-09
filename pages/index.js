@@ -45,7 +45,7 @@ const Home = () => {
     const [userState, setUserState] = useState(DEFAULT_STATE);
     // const [user, setUser] = useStateWithLocalStorage('grapevine_user', {})
     const [isLoginModalOpen, setLoginModalOpen] = useState(false);
-    const [isCreateTaskModalOpen, setCreateTaskModalOpen] = useState(true);
+    const [isCreateTaskModalOpen, setCreateTaskModalOpen] = useState(false);
     const [loginState, setLoginState] = useState(LOGIN_STATE_DEFAULT);
     const {isLoading, account} = useEthers();
 
