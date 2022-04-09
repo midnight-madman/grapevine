@@ -1,15 +1,51 @@
-import Head from 'next/head'
-import {Fragment, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import {Transition} from '@headlessui/react'
 import {CheckCircleIcon} from '@heroicons/react/outline'
 import {XIcon} from '@heroicons/react/solid'
+import LoginModal from "../src/LoginModal";
+import {classNames} from "../src/utils";
+import {useEthers} from "@usedapp/core";
 
 const SHOW_DAO_TASKS = 'SHOW_DAO_TASKS';
 const DEFAULT_STATE = 'DEFAULT_STATE'
+const START_LOGIN = 'START_LOGIN'
+
+export const LOGIN_STATE_DEFAULT = 'LOGIN_STATE_DEFAULT';
+export const LOGIN_STATE_CHECKING_IF_IS_USER = 'LOGIN_STATE_CHECKING_IF_IS_USER';
+export const LOGIN_STATE_IS_USER = 'LOGIN_STATE_IS_USER';
+export const LOGIN_STATE_IS_NO_USER = 'LOGIN_STATE_IS_NO_USER';
+
+export const getUseStateWithLocalStorage = () => {
+    let useStateWithLocalStorage;
+    if (typeof window !== 'undefined') {
+        useStateWithLocalStorage = (localStorageKey, defaultValue = '') => {
+            const [value, setValue] = useState(
+                localStorage.getItem(localStorageKey) || defaultValue
+            );
+
+            useEffect(() => {
+                localStorage.setItem(localStorageKey, value);
+            }, [value]);
+
+            return [value, setValue];
+        };
+    } else {
+        useStateWithLocalStorage = (localStorageKey, defaultValue = '') => {
+            return useState(defaultValue);
+        };
+    }
+
+    return useStateWithLocalStorage;
+};
+
+const useStateWithLocalStorage = getUseStateWithLocalStorage();
 
 const Home = () => {
     const [userState, setUserState] = useState(DEFAULT_STATE);
-    const [show, setShow] = useState(true)
+    // const [user, setUser] = useStateWithLocalStorage('grapevine_user', {})
+    const [isOpenModal, setOpenModal] = useState(false);
+    const [loginState, setLoginState] = useState(LOGIN_STATE_DEFAULT);
+    const {isLoading, account} = useEthers();
 
     const renderDaoTasks = () => {
         const posts = [
@@ -157,7 +193,8 @@ const Home = () => {
                                     </div>
                                     <div className="ml-3 w-0 flex-1 pt-0.5">
                                         <p className="text-sm font-medium text-gray-900">Successfully saved!</p>
-                                        <p className="mt-1 text-sm text-gray-500">Anyone with a link can now view this file.</p>
+                                        <p className="mt-1 text-sm text-gray-500">Anyone with a link can now view this
+                                            file.</p>
                                         <div className="mt-4 flex">
                                             <button
                                                 onClick={() => setUserState(DEFAULT_STATE)}
@@ -188,169 +225,191 @@ const Home = () => {
         </>;
     }
 
+    function onClickLogin() {
+        setUserState(START_LOGIN);
+        setOpenModal(true)
+    }
+
     return (
-        <div className="min-h-screen bg-gradient-to-tr from-indigo-800 via-purple-700 to-pink-500">
-            <Head>
-                <title>Grapevine</title>
-                <link rel="icon" href="/favicon.ico"/>
-            </Head>
+        <>
+            <LoginModal open={isOpenModal}
+                        setOpen={setOpenModal}
+                        loginState={loginState}
+                        setLoginState={setLoginState}/>
+            <div className="min-h-screen bg-gradient-to-tr from-indigo-800 via-purple-700 to-pink-500">
+                <main>
+                    {userState !== SHOW_DAO_TASKS && (
+                        <div className="text-center">
+                            <h1 className="title text-gray-100">
+                                Welcome to <span className="font-semibold"
+                                                 style={{color: '#FFC600'}}>Grapevine</span> 🍇
+                            </h1>
+                            <p className="mt-3 max-w-md mx-auto text-base text-gray-100 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                                The <span className="text-semibold">#1 place for DAO contributors</span> to find more friendly places to help out and earn from more places
+                            </p>
+                        </div>
+                    )}
 
-            <main>
-                {userState === DEFAULT_STATE && (
-                    <h1 className="title">
-                        Welcome to <span className="font-semibold text-gray-100">Grapevine</span> 🍇
-                    </h1>
-                )}
+                    {/*<p className="description">*/}
+                    {/*  Get started by editing <code>pages/index.js</code>*/}
+                    {/*</p>*/}
+                    {userState === SHOW_DAO_TASKS && renderDaoTasks()}
+                    <div className="grid select-none">
+                        <div
+                            onClick={() => onClickLogin()}
+                            className="card bg-gray-100 hover:cursor-pointer hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl">
+                            <h3>1️⃣ Login & Sign up &rarr;</h3>
+                            <p>Join Grapevine to see or submit offers from your DAO partners</p>
+                        </div>
 
-                {/*<p className="description">*/}
-                {/*  Get started by editing <code>pages/index.js</code>*/}
-                {/*</p>*/}
-                {userState === SHOW_DAO_TASKS && renderDaoTasks()}
-                <div className="grid">
-                    <div
-                        className="card bg-gray-100 hover:cursor-pointer hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl">
-                        <h3>1️⃣ Sign up &rarr;</h3>
-                        <p>Join Grapevine to see or submit offers from your DAO partners</p>
+                        <div
+                            className={classNames(account && loginState === LOGIN_STATE_IS_USER ?
+                                    'cursor-pointer bg-gray-100 hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl' : 'cursor-default bg-gray-300',
+                                'card'
+                            )}
+                            onClick={() => account && loginState === LOGIN_STATE_IS_USER && setUserState(SHOW_DAO_TASKS)}>
+                            <h3>2️⃣ See open tasks &rarr;</h3>
+                            <p>See exclusive projects for you to contribute at 23 different DAOs</p>
+                        </div>
+
+                        <div
+                            className={classNames(account && loginState === LOGIN_STATE_IS_USER ?
+                                    'cursor-pointer bg-gray-100 hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl' : 'cursor-default bg-gray-300',
+                                'card'
+                            )}>
+                            <h3>3️⃣ Raise your hand for work &rarr;</h3>
+                            <p>Discover and deploy boilerplate example Next.js projects.</p>
+                        </div>
+
+                        <div
+                            className={classNames(account && loginState === LOGIN_STATE_IS_USER ?
+                                    'cursor-pointer bg-gray-100 hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl' : 'cursor-default bg-gray-300',
+                                'card'
+                            )}>
+                            <h3>4️⃣ Submit new request &rarr;</h3>
+                            <p>
+                                Instantly deploy your Next.js site to a public URL with Vercel.
+                            </p>
+                        </div>
+                        {userState === SHOW_DAO_TASKS && (<div
+                            onClick={() => setUserState(DEFAULT_STATE)}
+                            className="card bg-gray-100 hover:cursor-pointer hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl">
+                            <h3 className="text-center">Close</h3>
+                        </div>)}
                     </div>
+                </main>
 
-                    <div
-                        className="card bg-gray-100 hover:cursor-pointer hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl"
-                        onClick={() => setUserState(SHOW_DAO_TASKS)}>
-                        <h3>2️⃣ See open tasks &rarr;</h3>
-                        <p>Learn about Next.js in an interactive course with quizzes!</p>
-                    </div>
+                <footer>
+                </footer>
 
-                    <div
-                        className="card bg-gray-100 hover:cursor-pointer hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl">
-                        <h3>3️⃣ Raise your hand for work &rarr;</h3>
-                        <p>Discover and deploy boilerplate example Next.js projects.</p>
-                    </div>
+                <style jsx>{`
+                  .container {
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                  }
 
-                    <div
-                        className="card bg-gray-100 hover:cursor-pointer hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl">
-                        <h3>4️⃣ Submit new request &rarr;</h3>
-                        <p>
-                            Instantly deploy your Next.js site to a public URL with Vercel.
-                        </p>
-                    </div>
-                    {userState !== DEFAULT_STATE && (<div
-                        onClick={() => setUserState(DEFAULT_STATE)}
-                        className="card bg-gray-100 hover:cursor-pointer hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl">
-                        <h3 className="text-center">Close</h3>
-                    </div>)}
-                </div>
-            </main>
+                  main {
+                    padding: 5rem 0;
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                  }
 
-            <footer>
-            </footer>
+                  footer {
+                    width: 100%;
+                    height: 100px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                  }
 
-            <style jsx>{`
-              .container {
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-              }
+                  footer a {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                  }
 
-              main {
-                padding: 5rem 0;
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-              }
-
-              footer {
-                width: 100%;
-                height: 100px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-              }
-
-              footer a {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-              }
-
-              a {
-                color: inherit;
-                text-decoration: none;
-              }
+                  a {
+                    color: inherit;
+                    text-decoration: none;
+                  }
 
 
-              .title {
-                margin: 0;
-                line-height: 1.15;
-                font-size: 4rem;
-              }
+                  .title {
+                    margin: 0;
+                    line-height: 1.15;
+                    font-size: 4rem;
+                  }
 
-              .title,
-              .description {
-                text-align: center;
-              }
+                  .title,
+                  .description {
+                    text-align: center;
+                  }
 
-              .description {
-                line-height: 1.5;
-                font-size: 1.5rem;
-              }
+                  .description {
+                    line-height: 1.5;
+                    font-size: 1.5rem;
+                  }
 
-              .grid {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-wrap: wrap;
+                  .grid {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-wrap: wrap;
 
-                max-width: 800px;
-                margin-top: 3rem;
-              }
+                    max-width: 800px;
+                    margin-top: 3rem;
+                  }
 
-              .card {
-                margin: 1rem;
-                flex-basis: 45%;
-                padding: 1.5rem;
-                border: 1px solid #eaeaea;
-                border-radius: 10px;
-                transition: color 0.15s ease, border-color 0.15s ease;
-              }
+                  .card {
+                    margin: 1rem;
+                    flex-basis: 45%;
+                    padding: 1.5rem;
+                    border: 1px solid #eaeaea;
+                    border-radius: 10px;
+                    transition: color 0.15s ease, border-color 0.15s ease;
+                  }
 
-              .card h3 {
-                margin: 0 0 1rem 0;
-                font-size: 1.5rem;
-              }
+                  .card h3 {
+                    margin: 0 0 1rem 0;
+                    font-size: 1.5rem;
+                  }
 
-              .card p {
-                margin: 0;
-                font-size: 1.25rem;
-                line-height: 1.5;
-              }
+                  .card p {
+                    margin: 0;
+                    font-size: 1.25rem;
+                    line-height: 1.5;
+                  }
 
-              .logo {
-                height: 1em;
-              }
+                  .logo {
+                    height: 1em;
+                  }
 
-              @media (max-width: 600px) {
-                .grid {
-                  width: 100%;
-                  flex-direction: column;
-                }
-              }
-            `}</style>
+                  @media (max-width: 600px) {
+                    .grid {
+                      width: 100%;
+                      flex-direction: column;
+                    }
+                  }
+                `}</style>
 
-            <style jsx global>{`
-              html,
-              body {
-                padding: 0;
-                margin: 0;
-              }
+                <style jsx global>{`
+                  html,
+                  body {
+                    padding: 0;
+                    margin: 0;
+                  }
 
-              * {
-                box-sizing: border-box;
-              }
-            `}</style>
-            {false && renderNotification()}
-        </div>
+                  * {
+                    box-sizing: border-box;
+                  }
+                `}</style>
+                {false && renderNotification()}
+            </div>
+        </>
     )
 }
 
