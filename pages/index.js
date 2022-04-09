@@ -5,6 +5,7 @@ import {XIcon} from '@heroicons/react/solid'
 import LoginModal from "../src/LoginModal";
 import {classNames} from "../src/utils";
 import {useEthers} from "@usedapp/core";
+import SubmitRequestModal from "../src/SubmitRequestModal";
 
 const SHOW_DAO_TASKS = 'SHOW_DAO_TASKS';
 const DEFAULT_STATE = 'DEFAULT_STATE'
@@ -43,7 +44,8 @@ const useStateWithLocalStorage = getUseStateWithLocalStorage();
 const Home = () => {
     const [userState, setUserState] = useState(DEFAULT_STATE);
     // const [user, setUser] = useStateWithLocalStorage('grapevine_user', {})
-    const [isOpenModal, setOpenModal] = useState(false);
+    const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+    const [isCreateTaskModalOpen, setCreateTaskModalOpen] = useState(true);
     const [loginState, setLoginState] = useState(LOGIN_STATE_DEFAULT);
     const {isLoading, account} = useEthers();
 
@@ -227,15 +229,16 @@ const Home = () => {
 
     function onClickLogin() {
         setUserState(START_LOGIN);
-        setOpenModal(true)
+        setLoginModalOpen(true)
     }
 
     return (
         <>
-            <LoginModal open={isOpenModal}
-                        setOpen={setOpenModal}
+            <LoginModal open={isLoginModalOpen}
+                        setOpen={setLoginModalOpen}
                         loginState={loginState}
                         setLoginState={setLoginState}/>
+            <SubmitRequestModal open={isCreateTaskModalOpen} setOpen={setCreateTaskModalOpen} />
             <div className="min-h-screen bg-gradient-to-tr from-indigo-800 via-purple-700 to-pink-500">
                 <main>
                     {userState !== SHOW_DAO_TASKS && (
@@ -282,6 +285,7 @@ const Home = () => {
                         </div>
 
                         <div
+                            onClick={() => setCreateTaskModalOpen(true)}
                             className={classNames(account && loginState === LOGIN_STATE_IS_USER ?
                                     'cursor-pointer bg-gray-100 hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl' : 'cursor-default bg-gray-300',
                                 'card'

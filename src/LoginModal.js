@@ -11,6 +11,7 @@ import {
     LOGIN_STATE_IS_NO_USER,
     LOGIN_STATE_IS_USER
 } from "../pages";
+import {truncate} from "lodash/string";
 
 export default function LoginModal({open, setOpen, loginState, setLoginState}) {
     const cancelButtonRef = useRef(null)
@@ -71,7 +72,7 @@ export default function LoginModal({open, setOpen, loginState, setLoginState}) {
             case 'LOGIN_STATE_DEFAULT':
                 return account ? 'Great, your wallet is connected. Now click the signup button to finish your onboarding to Grapevine.' : 'As a first step, go ahead and connect your wallet. Use the one which you use to receive DAO contributions in order for us to recognize you :)';
             case 'LOGIN_STATE_CHECKING_IF_IS_USER':
-                return `Going through our database of contributors...\nChecking for your wallet ${account}`;
+                return `Going through our database of contributors...\nChecking for your wallet ${truncate(account, 8)}`;
             case 'LOGIN_STATE_IS_USER':
                 return 'You are in! :) Welcome to Grapevine. You can now see open tasks from your DAOs and their partners';
             case 'LOGIN_STATE_IS_NO_USER':
@@ -96,7 +97,7 @@ export default function LoginModal({open, setOpen, loginState, setLoginState}) {
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <Dialog.Overlay className="fixed inset-0 bg-gray-400 bg-opacity-75 transition-opacity"/>
+                        <Dialog.Overlay className="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity"/>
                     </Transition.Child>
 
                     {/* This element is to trick the browser into centering the modal contents. */}
