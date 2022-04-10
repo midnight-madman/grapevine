@@ -17,5 +17,5 @@ export const daos = [
     // { id: 9, name: 'Claudie Smitham' },
     // { id: 10, name: 'Emil Schaefer' },
 ]
-export const FLOW_RATE = '34722000000000'; // ~100 USD per month
+export const FLOW_RATE = '35922000000000'; // ~100 USD per month
 export const GRAPEVINE_TREASURY = '0xa24480C19385C4dF1c685DDF1B2A154cc993241A';

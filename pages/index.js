@@ -102,7 +102,7 @@ const Home = () => {
         if (isEmpty(tasks)){
             return <div>nothing to see</div>
         }
-        console.log(tasks);
+
         return <div>
             {/*<div className="absolute inset-0">*/}
             {/*    <div className="bg-white h-1/3 sm:h-2/3"/>*/}
@@ -229,9 +229,9 @@ const Home = () => {
     }
 
     function onClickCreateRequest() {
-        if (account && loginState === LOGIN_STATE_IS_USER && chainId === 80001) {
+        // if (account && loginState === LOGIN_STATE_IS_USER && chainId === 80001) {
             setCreateTaskModalOpen(true)
-        }
+        // }
     }
 
     return (

@@ -18,18 +18,21 @@ export default function SubmitRequestModal({open, setOpen}) {
         handleSubmit,
     } = useForm();
 
+
     async function createMoneyStream(recipient, flowRate, userData) {
         console.log('creating money stream with target address:', truncate(GRAPEVINE_TREASURY, 8), 'and flowrate', FLOW_RATE)
         console.log('user account is', truncate(account, 8))
         const provider = alchemyRpcProvider;
+        const walletProvider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = walletProvider.getSigner();
+
         const networkName = 'mumbai';
         const metamaskSuperfluid = await Framework.create({
             networkName,
-            provider,
+            provider: walletProvider,
 
         });
-        const walletProvider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = metamaskSuperfluid.createSigner({web3Provider: walletProvider});
+        // const signer = metamaskSuperfluid.createSigner({web3Provider: walletProvider});
         const MATICxToken = "0x96B82B65ACF7072eFEb00502F45757F254c2a0D4"; //testnet
         const fUSDCxToken = "0x42bb40bF79730451B11f6De1CbA222F17b87Afd7"; //testnet
         // const MATICxToken = "0x3aD736904E9e65189c3000c7DD2c8AC8bB7cD4e3"; //mainnet
@@ -40,8 +43,8 @@ export default function SubmitRequestModal({open, setOpen}) {
                 receiver: recipient,
                 flowRate: flowRate,
                 superToken: fUSDCxToken,
-                // gasLimit: 3000000,
-                userData: userData,
+                gasLimit: 3000000,
+                // userData: userData,
             });
 
             console.log("Creating your stream...");
@@ -68,7 +71,7 @@ export default function SubmitRequestModal({open, setOpen}) {
     const onClickSubmit = async (formData) => {
         let userData = formData;
         userData['dao'] = selectedDaoForTask;
-        userData = asciiToHex(JSON.stringify(formData));
+        userData =  asciiToHex(JSON.stringify(formData));
 
         await createMoneyStream(GRAPEVINE_TREASURY, FLOW_RATE, userData)
     }
