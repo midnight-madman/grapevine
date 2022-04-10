@@ -70,7 +70,7 @@ const Home = () => {
     const [tasks, setTasks] = useState([]);
     const [loginState, setLoginState] = useState(LOGIN_STATE_DEFAULT);
     const {chainId, isLoading, account} = useEthers();
-    const [renderErrorNotification, setRenderErrorNotification] = useState(true);
+    const [renderErrorNotification, setRenderErrorNotification] = useState(false);
 
     const getSuperfluidStreams = async () => {
         const provider = alchemyRpcProvider;
@@ -235,13 +235,14 @@ const Home = () => {
     }
 
     function onClickCreateRequest() {
-        // if (account && loginState === LOGIN_STATE_IS_USER && chainId === 80001) {
+        if (account && loginState === LOGIN_STATE_IS_USER && chainId === 80001) {
             setCreateTaskModalOpen(true)
-        // }
+        }
     }
 
     return (
         <>
+            {account && chainId !== 80001 && <ChainBanner />}
             {renderNotification()}
             <LoginModal open={isLoginModalOpen}
                         setOpen={setLoginModalOpen}
