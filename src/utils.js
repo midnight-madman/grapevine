@@ -10,7 +10,7 @@ export const classNames = (...classes) => {
 };
 
 export const getContributedDAOsFromWalletAddress = (address) => {
-    const daoNames = ['OlympusDAO', 'RomeDAO'];
+    const daoNames = ['OlympusDAO', 'RomeDAO', 'BanklessDAO', 'NounsDAO', 'DeveloperDAO'];
     const filenames = map(daoNames, daoName => `data/${daoName}/${daoName}_contributors.csv`)
 
     return Promise.all([...filenames].map((file) =>
