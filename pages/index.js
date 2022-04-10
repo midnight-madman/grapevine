@@ -3,10 +3,17 @@ import {Transition} from '@headlessui/react'
 import {CheckCircleIcon} from '@heroicons/react/outline'
 import {XIcon} from '@heroicons/react/solid'
 import LoginModal from "../src/LoginModal";
-import {classNames} from "../src/utils";
+import {classNames, hexToAscii} from "../src/utils";
 import {useEthers} from "@usedapp/core";
 import SubmitRequestModal from "../src/SubmitRequestModal";
 import ChainBanner from "../src/ChainBanner";
+import {alchemyRpcProvider, GRAPEVINE_TREASURY} from "../src/config";
+import {filter, map} from "lodash/collection";
+import {assign, merge} from "lodash/object";
+import {isEmpty} from "lodash";
+
+const {Framework} = require("@superfluid-finance/sdk-core");
+const {ethers} = require("ethers");
 
 const SHOW_DAO_TASKS = 'SHOW_DAO_TASKS';
 const DEFAULT_STATE = 'DEFAULT_STATE'
@@ -16,6 +23,22 @@ export const LOGIN_STATE_DEFAULT = 'LOGIN_STATE_DEFAULT';
 export const LOGIN_STATE_CHECKING_IF_IS_USER = 'LOGIN_STATE_CHECKING_IF_IS_USER';
 export const LOGIN_STATE_IS_USER = 'LOGIN_STATE_IS_USER';
 export const LOGIN_STATE_IS_NO_USER = 'LOGIN_STATE_IS_NO_USER';
+
+const TASK_DEFAULT_VALUES = {
+    href: '#',
+    category: {name: 'Request for support', href: '#'},
+    date: 'Mar 16, 2020',
+    datetime: '2020-03-16',
+    imageUrl:
+        'https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1679&q=80',
+    readingTime: '6 min',
+    author: {
+        name: 'OlympusDAO (midnight-madman)',
+        href: '#',
+        imageUrl: './olympusdao.png',
+        // 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    }
+}
 
 export const getUseStateWithLocalStorage = () => {
     let useStateWithLocalStorage;
@@ -44,67 +67,42 @@ const Home = () => {
     const [userState, setUserState] = useState(DEFAULT_STATE);
     const [isLoginModalOpen, setLoginModalOpen] = useState(false);
     const [isCreateTaskModalOpen, setCreateTaskModalOpen] = useState(false);
+    const [tasks, setTasks] = useState([]);
     const [loginState, setLoginState] = useState(LOGIN_STATE_DEFAULT);
     const {chainId, isLoading, account} = useEthers();
 
-    const renderDaoTasks = () => {
-        const posts = [
-            {
-                title: 'Smart Contract Support',
-                href: '#',
-                category: {name: 'Request for support', href: '#'},
-                description:
-                    'Lorem ipsum dolor sit amet consectetur adipisicing elit.',
-                date: 'Mar 16, 2020',
-                datetime: '2020-03-16',
-                imageUrl:
-                    'https://images.unsplash.com/photo-1496128858413-b36217c2ce36?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1679&q=80',
-                readingTime: '6 min',
-                author: {
-                    name: 'OlympusDAO (midnight-madman)',
-                    href: '#',
-                    imageUrl: './olympusdao.png',
-                    // 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-                },
-            },
-            {
-                title: 'Frontend Magic with three.js',
-                href: '#',
-                category: {name: 'Request for support', href: '#'},
-                description:
-                    'Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
-                date: 'Mar 10, 2020',
-                datetime: '2020-03-10',
-                imageUrl:
-                    'https://images.unsplash.com/photo-1547586696-ea22b4d4235d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1679&q=80',
-                readingTime: '4 min',
-                author: {
-                    name: 'Brenna Goyette',
-                    href: '#',
-                    imageUrl:
-                        'https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-                },
-            },
-            {
-                title: 'Improve our contributor onboarding',
-                href: '#',
-                category: {name: 'Request for support', href: '#'},
-                description:
-                    'Lorem ipsum dolor sit amet consectetur adipisicing elit. ',
-                date: 'Feb 12, 2020',
-                datetime: '2020-02-12',
-                imageUrl:
-                    'https://images.unsplash.com/photo-1492724441997-5dc865305da7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1679&q=80',
-                readingTime: '11 min',
-                author: {
-                    name: 'DanMetz.eth',
-                    href: '#',
-                    imageUrl:
-                        'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-                },
-            },
-        ]
+    const getSuperfluidStreams = async () => {
+        const provider = alchemyRpcProvider;
+        const networkName = 'mumbai';
+        const metamaskSuperfluid = await Framework.create({
+            networkName,
+            provider,
 
+        });
+
+        const res = await metamaskSuperfluid.query.listStreams({receiver: GRAPEVINE_TREASURY});
+        const streams = map(res.data, stream => {
+            const streamEvents = map(stream.flowUpdatedEvents, (event) => {
+                if (event.userData !== '0x') {
+                    const userData = JSON.parse(hexToAscii(event.userData));
+                    return assign(userData, TASK_DEFAULT_VALUES)
+                }
+                return {isActive: event.type !== 2}
+            });
+            return assign(...filter(streamEvents, 'title'))
+        })
+        setTasks(filter(streams, stream => !isEmpty(stream)));
+    }
+
+    useEffect(() => {
+        getSuperfluidStreams();
+    }, []);
+
+    const renderDaoTasks = () => {
+        if (isEmpty(tasks)){
+            return <div>nothing to see</div>
+        }
+        console.log(tasks);
         return <div>
             {/*<div className="absolute inset-0">*/}
             {/*    <div className="bg-white h-1/3 sm:h-2/3"/>*/}
@@ -119,34 +117,34 @@ const Home = () => {
                     </p>
                 </div>
                 <div className="mt-12 max-w-lg mx-auto grid gap-5 lg:grid-cols-3 lg:max-w-none">
-                    {posts.map((post) => (
-                        <div key={post.title} className="flex flex-col rounded-lg shadow-lg overflow-hidden">
+                    {tasks.map((task) => (
+                        <div key={task.title} className="flex flex-col rounded-lg shadow-lg overflow-hidden">
                             <div className="flex-shrink-0">
-                                <img className="h-48 w-full object-cover" src={post.imageUrl} alt=""/>
+                                <img className="h-48 w-full object-cover" src={task.imageUrl} alt=""/>
                             </div>
                             <div className="flex-1 bg-white p-6 flex flex-col justify-between">
                                 <div className="flex-1">
                                     <p className="text-sm font-medium text-green-600">
-                                        <a href={post.category.href} className="hover:underline">
-                                            {post.category.name}
+                                        <a href={task.category.href} className="hover:underline">
+                                            {task.category.name}
                                         </a>
                                     </p>
-                                    <a href={post.href} className="block mt-2">
-                                        <p className="text-xl font-semibold text-gray-900">{post.title}</p>
-                                        <p className="mt-3 text-base text-gray-500">{post.description}</p>
+                                    <a href={task.href} className="block mt-2">
+                                        <p className="text-xl font-semibold text-gray-900">{task.title}</p>
+                                        <p className="mt-3 text-base text-gray-500">{task.description}</p>
                                     </a>
                                 </div>
                                 <div className="mt-6 flex items-center">
                                     <div className="flex-shrink-0">
-                                        <a href={post.author.href}>
-                                            <span className="sr-only">{post.author.name}</span>
-                                            <img className="h-10 w-10 rounded-full" src={post.author.imageUrl} alt=""/>
+                                        <a href={task.author.href}>
+                                            <span className="sr-only">{task.author.name}</span>
+                                            <img className="h-10 w-10 rounded-full" src={task.author.imageUrl} alt=""/>
                                         </a>
                                     </div>
                                     <div className="ml-3">
                                         <p className="text-sm font-medium text-gray-900">
-                                            <a href={post.author.href} className="hover:underline">
-                                                {post.author.name}
+                                            <a href={task.author.href} className="hover:underline">
+                                                {task.author.name}
                                             </a>
                                         </p>
                                         {/*<div className="flex space-x-1 text-sm text-gray-500">*/}
@@ -278,7 +276,8 @@ const Home = () => {
                                     'cursor-pointer bg-gray-100 hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl' : 'cursor-default bg-gray-300',
                                 'card'
                             )}
-                            onClick={() => account && loginState === LOGIN_STATE_IS_USER && setUserState(SHOW_DAO_TASKS)}>
+                            // onClick={() => account && loginState === LOGIN_STATE_IS_USER && setUserState(SHOW_DAO_TASKS)}>
+                            onClick={() => setUserState(SHOW_DAO_TASKS)}>
                             <h3>2️⃣ See open tasks &rarr;</h3>
                             <p>See exclusive projects for you to contribute at 23 different DAOs</p>
                         </div>
