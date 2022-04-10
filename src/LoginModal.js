@@ -1,5 +1,5 @@
 import {CheckIcon} from '@heroicons/react/outline'
-import {Fragment, useRef, useState} from "react";
+import {Fragment, useRef} from "react";
 import {Dialog, Transition} from '@headlessui/react'
 import ConnectWalletButton from "./ConnectWalletButton";
 import {useEthers} from "@usedapp/core";

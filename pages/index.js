@@ -230,14 +230,22 @@ const Home = () => {
         setLoginModalOpen(true)
     }
 
+    function onClickCreateRequest() {
+        if (account && loginState === LOGIN_STATE_IS_USER && chainId === 80001) {
+            setCreateTaskModalOpen(true)
+        }
+    }
+
     return (
         <>
-            {account && chainId !== "80001" && (<ChainBanner/>)}
+            <div>
+                {account && chainId !== 80001 && (<ChainBanner/>)}
+            </div>
             <LoginModal open={isLoginModalOpen}
                         setOpen={setLoginModalOpen}
                         loginState={loginState}
                         setLoginState={setLoginState}/>
-            <SubmitRequestModal open={isCreateTaskModalOpen} setOpen={setCreateTaskModalOpen} />
+            <SubmitRequestModal open={isCreateTaskModalOpen} setOpen={setCreateTaskModalOpen}/>
             <div className="min-h-screen bg-gradient-to-tr from-indigo-800 via-purple-700 to-pink-500">
                 <main>
                     {userState !== SHOW_DAO_TASKS && (
@@ -247,7 +255,8 @@ const Home = () => {
                                                  style={{color: '#FFC600'}}>Grapevine</span> 🍇
                             </h1>
                             <p className="mt-3 max-w-md mx-auto text-base text-gray-100 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                                The <span className="text-semibold">#1 place for DAO contributors</span> to find more friendly places to help out and earn from more places
+                                The <span className="text-semibold">#1 place for DAO contributors</span> to find more
+                                friendly places to help out and earn from more places
                             </p>
                         </div>
                     )}
@@ -284,8 +293,8 @@ const Home = () => {
                         </div>
 
                         <div
-                            onClick={() => setCreateTaskModalOpen(true)}
-                            className={classNames(account && loginState === LOGIN_STATE_IS_USER && chainId !== "80001"?
+                            onClick={() => onClickCreateRequest()}
+                            className={classNames(account && loginState === LOGIN_STATE_IS_USER && chainId === 80001 ?
                                     'cursor-pointer bg-gray-100 hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl' : 'cursor-default bg-gray-300',
                                 'card'
                             )}>
