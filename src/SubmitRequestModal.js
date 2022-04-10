@@ -13,6 +13,8 @@ export default function SubmitRequestModal({open, setOpen, setRenderErrorNotific
     const cancelButtonRef = useRef(null)
     const {isLoading, account} = useEthers();
     const [selectedDaoForTask, setSelectedDaoForTask] = useState(daos[0])
+    const [submitStatus, setSubmitStatus] = useState('');
+
     const {
         register,
         handleSubmit,
@@ -20,6 +22,7 @@ export default function SubmitRequestModal({open, setOpen, setRenderErrorNotific
 
 
     async function createMoneyStream(recipient, flowRate, userData) {
+        setSubmitStatus('pending')
         console.log('creating money stream with target address:', truncate(GRAPEVINE_TREASURY, 8), 'and flowrate', FLOW_RATE)
         console.log('user account is', truncate(account, 8))
         const provider = alchemyRpcProvider;
@@ -43,8 +46,7 @@ export default function SubmitRequestModal({open, setOpen, setRenderErrorNotific
                 receiver: recipient,
                 flowRate: flowRate,
                 superToken: fUSDCxToken,
-                gasLimit: 3000000,
-                // userData: userData,
+                userData: userData,
             });
 
             console.log("Creating your stream...");
@@ -63,18 +65,38 @@ export default function SubmitRequestModal({open, setOpen, setRenderErrorNotific
                 Receiver: ${recipient},
                 FlowRate: ${flowRate}
                 `);
+            setSubmitStatus('success')
         } catch (error) {
             console.error(error.errorObject);
             setRenderErrorNotification(true)
+            setSubmitStatus('error')
         }
     }
 
     const onClickSubmit = async (formData) => {
         let userData = formData;
         userData['dao'] = selectedDaoForTask;
+        userData['datetime'] = new Date().toISOString().split('T')[0];
+        userData['author'] = {}
+        userData['author']['name'] = account;
+
+        userData['author']['imageUrl'] = 'https://pbs.twimg.com/profile_images/1484272159077797888/yl4nOJno_400x400.jpg';
+
         userData =  asciiToHex(JSON.stringify(formData));
 
         await createMoneyStream(GRAPEVINE_TREASURY, FLOW_RATE, userData)
+    }
+
+    function renderButtonText() {
+        switch (submitStatus) {
+            case 'success':
+                return 'Success!'
+            case 'pending':
+                return '...'
+            default:
+                return 'Create task'
+        }
+
     }
 
     return (
@@ -109,7 +131,27 @@ export default function SubmitRequestModal({open, setOpen, setRenderErrorNotific
                     >
                         <div
                             className="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-
+                            {(submitStatus === 'pending') && (<div className="mx-auto flex w-12 h-12 items-center justify-center">
+                                <svg
+                                    className="animate-spin w-6 h-6 mr-3"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                    />
+                                </svg>
+                            </div>)}
+                            {(submitStatus === 'success') && (<div className="mb-4 mx-auto flex w-12 h-12 items-center justify-center">
+                                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <CheckIcon className="h-6 w-6 text-green-600" aria-hidden="true"/>
+                            </div>
+                            </div>)}
                             <form onSubmit={handleSubmit(onClickSubmit)} method="POST"
                                   className="space-y-8 divide-y divide-gray-200">
                                 <div className="space-y-8 divide-y divide-gray-200">
@@ -123,7 +165,6 @@ export default function SubmitRequestModal({open, setOpen, setRenderErrorNotific
                                                 at {selectedDaoForTask.name} and their partner DAOs.
                                                 Submit this form to create the request and create a stream of 100 USDC
                                                 per month (via Superfluid).
-
                                             </p>
                                         </div>
 
@@ -307,7 +348,7 @@ export default function SubmitRequestModal({open, setOpen, setRenderErrorNotific
                                             type="submit"
                                             className="ml-3 inline-flex justify-center py-2 px-8 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                         >
-                                            Create task
+                                            {renderButtonText()}
                                         </button>
                                     </div>
                                 </div>
