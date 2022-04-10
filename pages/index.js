@@ -6,6 +6,7 @@ import LoginModal from "../src/LoginModal";
 import {classNames} from "../src/utils";
 import {useEthers} from "@usedapp/core";
 import SubmitRequestModal from "../src/SubmitRequestModal";
+import ChainBanner from "../src/ChainBanner";
 
 const SHOW_DAO_TASKS = 'SHOW_DAO_TASKS';
 const DEFAULT_STATE = 'DEFAULT_STATE'
@@ -39,15 +40,12 @@ export const getUseStateWithLocalStorage = () => {
     return useStateWithLocalStorage;
 };
 
-const useStateWithLocalStorage = getUseStateWithLocalStorage();
-
 const Home = () => {
     const [userState, setUserState] = useState(DEFAULT_STATE);
-    // const [user, setUser] = useStateWithLocalStorage('grapevine_user', {})
     const [isLoginModalOpen, setLoginModalOpen] = useState(false);
     const [isCreateTaskModalOpen, setCreateTaskModalOpen] = useState(false);
     const [loginState, setLoginState] = useState(LOGIN_STATE_DEFAULT);
-    const {isLoading, account} = useEthers();
+    const {chainId, isLoading, account} = useEthers();
 
     const renderDaoTasks = () => {
         const posts = [
@@ -234,6 +232,7 @@ const Home = () => {
 
     return (
         <>
+            {account && chainId !== "80001" && (<ChainBanner/>)}
             <LoginModal open={isLoginModalOpen}
                         setOpen={setLoginModalOpen}
                         loginState={loginState}
@@ -286,7 +285,7 @@ const Home = () => {
 
                         <div
                             onClick={() => setCreateTaskModalOpen(true)}
-                            className={classNames(account && loginState === LOGIN_STATE_IS_USER ?
+                            className={classNames(account && loginState === LOGIN_STATE_IS_USER && chainId !== "80001"?
                                     'cursor-pointer bg-gray-100 hover:bg-gray-200 hover:text-gray-600 hover:shadow-xl' : 'cursor-default bg-gray-300',
                                 'card'
                             )}>

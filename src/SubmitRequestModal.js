@@ -1,14 +1,13 @@
 import {Fragment, useRef, useState} from "react";
 import {Dialog, Listbox, Transition} from '@headlessui/react'
 import {useEthers} from "@usedapp/core";
-import {classNames} from "./utils";
+import {asciiToHex, classNames} from "./utils";
 import {CheckIcon, SelectorIcon} from '@heroicons/react/solid'
 import {truncate} from "lodash/string";
 import {ethers} from "ethers";
 import {Framework} from "@superfluid-finance/sdk-core";
 import {alchemyRpcProvider, daos, FLOW_RATE, GRAPEVINE_TREASURY} from "./config";
-import { useForm } from 'react-hook-form';
-import web3 from "web3";
+import {useForm} from 'react-hook-form';
 
 export default function SubmitRequestModal({open, setOpen}) {
     const cancelButtonRef = useRef(null)
@@ -69,7 +68,7 @@ export default function SubmitRequestModal({open, setOpen}) {
     const onClickSubmit = async (formData) => {
         let userData = formData;
         userData['dao'] = selectedDaoForTask;
-        userData = web3.utils.asciiToHex(JSON.stringify(formData));
+        userData = asciiToHex(JSON.stringify(formData));
 
         await createMoneyStream(GRAPEVINE_TREASURY, FLOW_RATE, userData)
     }
@@ -107,7 +106,8 @@ export default function SubmitRequestModal({open, setOpen}) {
                         <div
                             className="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
 
-                            <form onSubmit={handleSubmit(onClickSubmit)} method="POST"className="space-y-8 divide-y divide-gray-200">
+                            <form onSubmit={handleSubmit(onClickSubmit)} method="POST"
+                                  className="space-y-8 divide-y divide-gray-200">
                                 <div className="space-y-8 divide-y divide-gray-200">
                                     <div>
                                         <div>
@@ -117,7 +117,8 @@ export default function SubmitRequestModal({open, setOpen}) {
                                             <p className="mt-1 text-sm text-gray-500">
                                                 This information will be shared to all contributors
                                                 at {selectedDaoForTask.name} and their partner DAOs.
-                                                Submit this form to create the request and create a stream of 100 USDC per month (via Superfluid).
+                                                Submit this form to create the request and create a stream of 100 USDC
+                                                per month (via Superfluid).
 
                                             </p>
                                         </div>
@@ -185,7 +186,8 @@ export default function SubmitRequestModal({open, setOpen}) {
                                                         <>
                                                             <Listbox.Label
                                                                 className="block text-sm font-medium text-gray-700">
-                                                                From which DAO does the request come from?</Listbox.Label>
+                                                                From which DAO does the request come
+                                                                from?</Listbox.Label>
                                                             <div className="mt-1 relative">
                                                                 <Listbox.Button
                                                                     className="bg-white relative w-full border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default sm:text-sm">
@@ -230,7 +232,8 @@ export default function SubmitRequestModal({open, setOpen}) {
                                                                                                     'absolute inset-y-0 right-0 flex items-center pr-4'
                                                                                                 )}
                                                                                             >
-                                                                                        <CheckIcon className="h-5 w-5" aria-hidden="true"/>
+                                                                                        <CheckIcon className="h-5 w-5"
+                                                                                                   aria-hidden="true"/>
                                                                                       </span>
                                                                                         ) : null}
                                                                                     </>

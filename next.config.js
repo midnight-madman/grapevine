@@ -1,6 +1,6 @@
 module.exports = {
     trailingSlash: true,
-    swcMinify: true,
+    // swcMinify: true,
     env: {
         SITE: process.env.SITE,
     },
