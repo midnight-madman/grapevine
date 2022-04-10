@@ -67,7 +67,7 @@ const Home = () => {
     const [isLoginModalOpen, setLoginModalOpen] = useState(false);
     const [isCreateTaskModalOpen, setCreateTaskModalOpen] = useState(false);
     const [tasks, setTasks] = useState([]);
-    const [loginState, setLoginState] = useState(LOGIN_STATE_IS_USER) // LOGIN_STATE_DEFAULT);
+    const [loginState, setLoginState] = useState(LOGIN_STATE_DEFAULT);
     const {chainId, isLoading, account} = useEthers();
     const [renderErrorNotification, setRenderErrorNotification] = useState(false);
 

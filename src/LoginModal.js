@@ -20,9 +20,9 @@ export default function LoginModal({open, setOpen, loginState, setLoginState}) {
     const onClickSignup = async () => {
         if (loginState === LOGIN_STATE_DEFAULT && account) {
             setLoginState(LOGIN_STATE_CHECKING_IF_IS_USER);
-            await sleep(1000);
+            await sleep(3000);
 
-            const contributedDaos = await getContributedDAOsFromWalletAddress(account || "0xa24480C19385C4dF1c685DDF1B2A154cc993241A" || null)
+            const contributedDaos = await getContributedDAOsFromWalletAddress(account)
 
             if (isEmpty(contributedDaos)) {
                 setLoginState(LOGIN_STATE_IS_NO_USER)
