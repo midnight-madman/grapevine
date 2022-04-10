@@ -9,7 +9,7 @@ import {Framework} from "@superfluid-finance/sdk-core";
 import {alchemyRpcProvider, daos, FLOW_RATE, GRAPEVINE_TREASURY} from "./config";
 import {useForm} from 'react-hook-form';
 
-export default function SubmitRequestModal({open, setOpen}) {
+export default function SubmitRequestModal({open, setOpen, setRenderErrorNotification}) {
     const cancelButtonRef = useRef(null)
     const {isLoading, account} = useEthers();
     const [selectedDaoForTask, setSelectedDaoForTask] = useState(daos[0])
@@ -65,6 +65,7 @@ export default function SubmitRequestModal({open, setOpen}) {
                 `);
         } catch (error) {
             console.error(error.errorObject);
+            setRenderErrorNotification(true)
         }
     }
 

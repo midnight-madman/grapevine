@@ -70,6 +70,7 @@ const Home = () => {
     const [tasks, setTasks] = useState([]);
     const [loginState, setLoginState] = useState(LOGIN_STATE_DEFAULT);
     const {chainId, isLoading, account} = useEthers();
+    const [renderErrorNotification, setRenderErrorNotification] = useState(true);
 
     const getSuperfluidStreams = async () => {
         const provider = alchemyRpcProvider;
@@ -162,8 +163,12 @@ const Home = () => {
         </div>
     }
 
+    function onClickHideNotification() {
+        setUserState(DEFAULT_STATE)
+        setRenderErrorNotification(false)
+    }
+
     function renderNotification() {
-        const show = userState !== DEFAULT_STATE
         return <>
             {/* Global notification live region, render this permanently at the end of the document */}
             <div
@@ -173,7 +178,7 @@ const Home = () => {
                 <div className="w-full flex flex-col items-center space-y-4 sm:items-end">
                     {/* Notification panel, dynamically insert this into the live region when it needs to be displayed */}
                     <Transition
-                        show={show}
+                        show={renderErrorNotification}
                         as={Fragment}
                         enter="transform ease-out duration-300 transition"
                         enterFrom="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
@@ -187,17 +192,18 @@ const Home = () => {
                             <div className="p-4">
                                 <div className="flex items-start">
                                     <div className="flex-shrink-0">
-                                        <CheckCircleIcon className="h-6 w-6 text-green-400" aria-hidden="true"/>
+                                        <XIcon className="h-6 w-6 text-red-400" aria-hidden="true"/>
                                     </div>
                                     <div className="ml-3 w-0 flex-1 pt-0.5">
-                                        <p className="text-sm font-medium text-gray-900">Successfully saved!</p>
-                                        <p className="mt-1 text-sm text-gray-500">Anyone with a link can now view this
-                                            file.</p>
+                                        <p className="text-sm font-medium text-gray-900">Something went wrong 😰</p>
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            Some sleep and coffee for Grapevine will fix this soon
+                                        </p>
                                         <div className="mt-4 flex">
                                             <button
-                                                onClick={() => setUserState(DEFAULT_STATE)}
+                                                onClick={() => onClickHideNotification()}
                                                 type="button"
-                                                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                                className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
                                             >
                                                 Go back to start
                                             </button>
@@ -207,7 +213,7 @@ const Home = () => {
                                         <button
                                             className="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                             onClick={() => {
-                                                setUserState(DEFAULT_STATE)
+                                                setRenderErrorNotification(false)
                                             }}
                                         >
                                             <span className="sr-only">Close</span>
@@ -236,14 +242,12 @@ const Home = () => {
 
     return (
         <>
-            <div>
-                {account && chainId !== 80001 && (<ChainBanner/>)}
-            </div>
+            {renderNotification()}
             <LoginModal open={isLoginModalOpen}
                         setOpen={setLoginModalOpen}
                         loginState={loginState}
                         setLoginState={setLoginState}/>
-            <SubmitRequestModal open={isCreateTaskModalOpen} setOpen={setCreateTaskModalOpen}/>
+            <SubmitRequestModal open={isCreateTaskModalOpen} setOpen={setCreateTaskModalOpen} setRenderErrorNotification={setRenderErrorNotification}/>
             <div className="min-h-screen bg-gradient-to-tr from-indigo-800 via-purple-700 to-pink-500">
                 <main>
                     {userState !== SHOW_DAO_TASKS && (
@@ -418,7 +422,6 @@ const Home = () => {
                     box-sizing: border-box;
                   }
                 `}</style>
-                {false && renderNotification()}
             </div>
         </>
     )
