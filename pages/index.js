@@ -273,7 +273,7 @@ const Home = () => {
                                                  style={{color: '#FFC600'}}>Grapevine</span> 🍇
                             </h1>
                             <p className="mt-3 max-w-md mx-auto text-base text-gray-100 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                                The <span className="text-semibold">#1 place for Talent Corridors</span>
+                                The <span className="text-semibold">#1 place for Talent Corridors</span>&nbsp;
                                 between friendly DAOs where projects can be matched to trusted contributors
                             </p>
                         </div>
