@@ -81,6 +81,7 @@ const Home = () => {
         });
 
         const res = await metamaskSuperfluid.query.listStreams({receiver: GRAPEVINE_TREASURY});
+        console.log(res);
         const streams = map(res.data, (stream, idx) => {
             const streamEvents = map(stream.flowUpdatedEvents, (event) => {
                 if (event.userData !== '0x') {
@@ -138,14 +139,17 @@ const Home = () => {
                                 <div className="mt-6 flex items-center">
                                     <div className="flex-shrink-0">
                                         <div>
-                                            <span className="sr-only">{task.author && task.author.name || '0x29d7d1dd5b6f9c864d9db560d72a247c178ae86b'}</span>
-                                            <img className="h-10 w-10 rounded-full" src={task.author && task.author.imageUrl || "data:image/png;base64,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"} alt=""/>
+                                            <span
+                                                className="sr-only">{task.author && task.author.name || '0x29d7d1dd5b6f9c864d9db560d72a247c178ae86b'}</span>
+                                            <img className="h-10 w-10 rounded-full"
+                                                 src={task.author && task.author.imageUrl || "data:image/png;base64,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"}
+                                                 alt=""/>
                                         </div>
                                     </div>
                                     <div className="ml-3">
                                         <p className="text-sm font-medium text-gray-900">
                                             <div className="hover:underline">
-                                                {truncate(task.author && task.author.name || '0x29d7d1dd5b6f9c864d9db560d72a247c178ae86b', {'length': 16}) }
+                                                {truncate(task.author && task.author.name || '0x29d7d1dd5b6f9c864d9db560d72a247c178ae86b', {'length': 16})}
                                             </div>
                                         </p>
                                         <div className="flex space-x-1 text-sm text-gray-500">
@@ -269,8 +273,8 @@ const Home = () => {
                                                  style={{color: '#FFC600'}}>Grapevine</span> 🍇
                             </h1>
                             <p className="mt-3 max-w-md mx-auto text-base text-gray-100 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                                The <span className="text-semibold">#1 place for DAO contributors</span> to find more
-                                friendly places to help out and earn from more places
+                                The <span className="text-semibold">#1 place for Talent Corridors</span>
+                                between friendly DAOs where projects can be matched to trusted contributors
                             </p>
                         </div>
                     )}
@@ -324,7 +328,7 @@ const Home = () => {
                             <h3 className="text-center">Close</h3>
                         </div>)}
                     </div>
-                    <DaosOnGrapevine />
+                    <DaosOnGrapevine/>
                 </main>
 
                 <footer>
